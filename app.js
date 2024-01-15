@@ -2,6 +2,14 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
+// Importacion de archivos
+const listViewRouter = require('./list-view-router');
+const listEditRouter = require('./list-edit-router');
+
+// Uso de los routers
+app.use('/list-view', listViewRouter);
+app.use('/list-edit', listEditRouter);
+
 // Lista de tareas
 const tasks = [
   {

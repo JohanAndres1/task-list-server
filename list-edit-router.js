@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-let tasks = [
+const tasks = [
   {
     id: '123456',
     isCompleted: false,

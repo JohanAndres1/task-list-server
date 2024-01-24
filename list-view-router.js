@@ -14,6 +14,22 @@ const tasks = [
   }
 ]
 
+// Middleware para gestionar parámetros correctos en list-view-router
+function validateParameters(req, res, next) {
+  const { param1, param2 } = req.params
+
+  // Verificar si los parámetros son correctos
+  if (!param1 && !param2) {
+    // Error si los parámetros no son correctos
+    return res.status(400).json({ error: 'Al menos uno de los parámetros es necesario.' })
+  }
+
+  next()
+}
+
+// Implementar el middleware en el router list-view-router
+router.use(validateParameters)
+
 // Ruta para listar tareas completas
 router.get('/completed-tasks', (req, res) => {
   const completedTasks = tasks.filter(task => task.isCompleted)

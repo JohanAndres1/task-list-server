@@ -7,7 +7,7 @@ const PORT = 3000
 
 dotenv.config()
 
-// Importacion de archivos
+// Importación de archivos
 const listViewRouter = require('./list-view-router')
 const listEditRouter = require('./list-edit-router')
 
@@ -15,11 +15,8 @@ const listEditRouter = require('./list-edit-router')
 app.use('/list-view', listViewRouter)
 app.use('/list-edit', listEditRouter)
 
-// Middleware para parsear el cuerpo de la solicitud
-app.use(express.json())
-
 // Lista de tareas
-const tasks = [
+let tasks = [
   {
     id: '123456',
     isCompleted: false,
@@ -27,10 +24,8 @@ const tasks = [
   }
 ]
 
-// Ruta para obtener la lista de tareas
-app.get('/', (req, res) => {
-  res.json(tasks)
-})
+// Middleware para parsear el cuerpo de la solicitud
+app.use(express.json())
 
 // Ruta para autenticación (POST)
 app.post('/login', (req, res) => {
@@ -69,6 +64,75 @@ function authenticateToken(req, res, next) {
     next()
   })
 }
+
+// Crear una nueva tarea
+app.post('/tasks', (req, res) => {
+  const { description } = req.body
+
+  const newTask = {
+    id: Date.now().toString(),
+    isCompleted: false,
+    description
+  }
+
+  tasks.push(newTask)
+  res.status(201).json(newTask)
+})
+
+// Listar todas las tareas
+app.get('/tasks', (req, res) => {
+  res.status(200).json(tasks)
+})
+
+// Obtener una sola tarea
+app.get('/tasks/:taskId', (req, res) => {
+  const taskId = req.params.taskId
+  const task = tasks.find(t => t.id === taskId)
+
+  if (!task) {
+    return res.status(404).json({ message: 'Task not found' })
+  }
+
+  res.status(200).json(task)
+})
+
+// Actualizar una tarea
+app.put('/tasks/:taskId', (req, res) => {
+  const taskId = req.params.taskId
+  const { isCompleted, description } = req.body
+
+  tasks = tasks.map(task => {
+    if (task.id === taskId) {
+      return {
+        ...task,
+        isCompleted: isCompleted !== undefined ? isCompleted : task.isCompleted,
+        description: description || task.description
+      }
+    }
+    return task
+  })
+
+  res.status(200).json({ message: 'Task updated successfully' })
+})
+
+// Eliminar una tarea
+app.delete('/tasks/:taskId', (req, res) => {
+  const taskId = req.params.taskId
+  tasks = tasks.filter(task => task.id !== taskId)
+  res.status(200).json({ message: 'Task deleted successfully' })
+})
+
+// Listar tareas completas
+app.get('/tasks/completed', (req, res) => {
+  const completedTasks = tasks.filter(task => task.isCompleted)
+  res.status(200).json(completedTasks)
+})
+
+// Listar tareas incompletas
+app.get('/tasks/incomplete', (req, res) => {
+  const incompleteTasks = tasks.filter(task => !task.isCompleted)
+  res.status(200).json(incompleteTasks)
+})
 
 // Inicia el servidor
 app.listen(PORT, () => {
